@@ -1,39 +1,41 @@
 import csv
-import requests
-from pandas import read_csv
+import urllib
+from bs4 import BeautifulSoup
 
-CSV_URL = 'https://www.bfxdata.com/csv/vwapHourlyBTCUSD.csv'
+BASE_URL = 'https://www.bfxdata.com/'
 
-last = []
+def get_html(url):
+    response = urllib.request.urlopen(url)
+    return response.read()
 
-def download(url):
+def parse(html):
+    soup = BeautifulSoup(html, 'lxml')
+    table = soup.find('div', class_ = 'container')
 
-    with requests.Session() as s:
-        download = s.get(url)
+    projects = []
 
-        decoded_content = download.content.decode('utf-8')
+    for row in table.find_all('div', class_ = 'container'):
+        for row1 in table.find_all('div', class_ = 'row landingrow'):
+            for row2 in row.find_all('div', class_ = 'price clearfix'):
 
-        cr = csv.reader(decoded_content.splitlines(), delimiter=',')
-        my_list = list(cr)
-    return my_list
+                projects.append({
+                    'title': row2.find('p', class_ = 'price_text').a.text,
+                    'price': row2.p.text,
+                    })
+    return projects
 
-def last_possiton(my_list):
-    j = 0
+def save(projects, path):
+    with open(path, 'w') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(('Название', 'Цена'))
 
-    for row in my_list:
-        last.append(row[1:3])
-        j = j +1
-        if j == 25:
-            break;
-
-    last.pop(0)
-
-df1 = read_csv(download(CSV_URL))
+        for project in projects:
+            writer.writerow((project['title'], project['price']))
 
 def main():
-    my_list = download(CSV_URL)
-    last_possiton(my_list)
-    #print(last)
-    print(df1)
+    projects = []
+    projects.extend(parse(get_html(BASE_URL)))
+    save(projects, 'projects.csv')
+
 if __name__ == '__main__':
     main()
