@@ -1,4 +1,4 @@
-import config
+import config, math
 import numpy as np
 import pandas as pd
 from pandas import read_csv
@@ -15,6 +15,12 @@ def BTCUSD_24(url):
     BTCUSD_HOURLY_24 = BTCUSD_HOURLY.head(25).ix[1:].loc[:,['Date','Value']]
 
     return(BTCUSD_HOURLY_24)
+
+def BTCROUND(parr):
+    i = 0
+    while i != 24:
+        round(float(parr.iloc[i,1]), 2)
+        i += 1
 
 def BTCUSD_price_change_proc(parr):
     BTCUSD_first = float(parr.iloc[0,1])
@@ -85,8 +91,10 @@ def ETCUSD_price_change(parr):
 def main():
 
     BTCUSD = BTCUSD_24(config.BTCUSD_URL)
+    BTCROUND(BTCUSD)
     BTC_CHANGE_P = BTCUSD_price_change_proc(BTCUSD)
     BTC_CHANGE = BTCUSD_price_change(BTCUSD)
+
     BTCUSD.to_csv('projects.csv', sep='\t', encoding='utf-8')
 
     ETHUSD = ETHUSD_24(config.ETHUSD_URL)
