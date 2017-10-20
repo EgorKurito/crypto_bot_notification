@@ -7,7 +7,7 @@ class BitFinex:
 
     def mid(self):
         # get information
-        mid = requests.get(self.url, timeout=1).text
+        mid = requests.get(self.url).text
         # str to dict & get param: 'mid'
         mid = eval(mid).get('mid')
         return mid
